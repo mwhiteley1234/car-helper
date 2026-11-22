@@ -1,0 +1,26 @@
+name: Daily recalls and reminders
+
+on:
+  schedule:
+    - cron: "17 14 * * *"   # every day 14:17 UTC (8:17 AM Central in winter, 9:17 AM in summer)
+  workflow_dispatch: {}      # lets you run it by hand from the Actions tab
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+      VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+      VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install web-push
+        run: npm install --no-save --no-package-lock web-push@3
+      - name: Check recalls and send reminders
+        run: node scripts/send-reminders.mjs
